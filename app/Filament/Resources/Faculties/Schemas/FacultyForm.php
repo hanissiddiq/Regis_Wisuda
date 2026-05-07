@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Filament\Resources\Faculties\Schemas;
+
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Schema;
+
+class FacultyForm
+{
+    public static function configure(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                TextInput::make('name')
+                    ->label('Nama Fakultas')
+                    ->required()
+                    ->maxLength(255),
+
+                TextInput::make('code')
+                    ->label('Kode Fakultas')
+                    ->required()
+                    ->unique(ignoreRecord: true)
+                    ->maxLength(2)
+                    ->placeholder('02'),
+            ]);
+    }
+}

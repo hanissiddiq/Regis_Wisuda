@@ -1,0 +1,95 @@
+<?php
+
+namespace App\Filament\Resources\Jurusans;
+
+use App\Filament\Resources\Jurusans\Pages\CreateJurusan;
+use App\Filament\Resources\Jurusans\Pages\EditJurusan;
+use App\Filament\Resources\Jurusans\Pages\ListJurusans;
+use App\Filament\Resources\Jurusans\Schemas\JurusanForm;
+use App\Filament\Resources\Jurusans\Tables\JurusansTable;
+use App\Models\Jurusan;
+use BackedEnum;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+
+use Filament\Forms\Components\Select;
+
+class JurusanResource extends Resource
+{
+    protected static ?string $model = Jurusan::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static ?string $recordTitleAttribute = 'Jurusan';
+
+    public static function form(Schema $schema): Schema
+    {
+        
+        return $schema->components([
+
+                Select::make('faculty_id')
+                    ->label('Fakultas')
+                    ->relationship('faculty', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->native(false)
+                    ->required(),
+
+                TextInput::make('name')
+                    ->label('Nama Jurusan')
+                    ->required()
+                    ->maxLength(255),
+
+                TextInput::make('code')
+                    ->label('Kode Jurusan')
+                    ->required()
+                    ->maxLength(2)
+                    ->placeholder('02'),
+
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+
+                TextColumn::make('faculty.name')
+                    ->label('Fakultas')
+                    ->searchable(),
+
+                TextColumn::make('name')
+                    ->label('Jurusan')
+                    ->searchable(),
+
+                TextColumn::make('code')
+                    ->label('Kode'),
+
+                TextColumn::make('created_at')
+                    ->dateTime('d M Y H:i'),
+
+            ])
+            ->striped()
+            ->defaultSort('id', 'desc');
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListJurusans::route('/'),
+            'create' => CreateJurusan::route('/create'),
+            'edit' => EditJurusan::route('/{record}/edit'),
+        ];
+    }
+}
