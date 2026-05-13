@@ -55,26 +55,8 @@ class JurusanResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-
-                TextColumn::make('faculty.name')
-                    ->label('Fakultas')
-                    ->searchable(),
-
-                TextColumn::make('name')
-                    ->label('Jurusan')
-                    ->searchable(),
-
-                TextColumn::make('code')
-                    ->label('Kode'),
-
-                TextColumn::make('created_at')
-                    ->dateTime('d M Y H:i'),
-
-            ])
-            ->striped()
-            ->defaultSort('id', 'desc');
+        return  JurusansTable::configure($table);
+            
     }
 
     public static function getRelations(): array

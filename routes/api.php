@@ -1,8 +1,8 @@
 <?php
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\RegistrationController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\MasterController;
+use App\Http\Controllers\Api\RegistrationController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\MasterController;
 
 Route::post('/register', [RegistrationController::class, 'store']);
 

@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+
+  --color-surface: #0b1326;
+  --color-surface-dim: #0b1326;
+  --color-surface-bright: #31394d;
+  --color-surface-container-lowest: #060e20;
+  --color-surface-container-low: #131b2e;
+  --color-surface-container: #171f33;
+  --color-surface-container-high: #222a3d;
+  --color-surface-container-highest: #2d3449;
+  
+  --color-primary: #d2bbff;
+  --color-on-primary: #3f008e;
+  --color-primary-container: #7c3aed;
+  --color-on-primary-container: #ede0ff;
+  
+  --color-secondary: #adc6ff;
+  --color-on-secondary: #002e6a;
+  --color-secondary-container: #0566d9;
+  --color-on-secondary-container: #e6ecff;
+  
+  --color-tertiary: #cebdff;
+  --color-on-tertiary: #381385;
+  --color-tertiary-container: #6f54bf;
+  
+  --color-on-surface: #dae2fd;
+  --color-on-surface-variant: #ccc3d8;
+  --color-outline: #958da1;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-on-surface min-h-screen selection:bg-primary-container/30 antialiased;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(5, 102, 217, 0.15) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(210, 187, 255, 0.05) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-surface-container-low/40 backdrop-blur-3xl border border-white/10 shadow-2xl;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  .glass-input {
+    @apply w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-on-surface placeholder:text-outline/60 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all duration-300 backdrop-blur-sm;
+  }
+
+  .btn-primary {
+    @apply w-full bg-gradient-to-r from-primary-container to-secondary-container hover:from-primary hover:to-secondary text-on-primary-container font-bold py-4 rounded-xl shadow-xl shadow-primary-container/20 transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2;
+  }
+
+  .btn-secondary {
+    @apply w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 text-on-surface py-4 rounded-xl transition-all duration-300 active:scale-[0.98];
+  }
+}
+
+.cosmic-bg {
+  background: radial-gradient(circle at 20% 30%, #3f008e 0%, transparent 40%),
+              radial-gradient(circle at 80% 70%, #0566d9 0%, transparent 40%),
+              #0b1326;
+}
