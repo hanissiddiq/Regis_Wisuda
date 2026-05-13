@@ -53,6 +53,7 @@ class PaymentController extends Controller
     public function callback(Request $request)
     {
         Log::info('CALLBACK MASUK');
+        Log::info('Masuk ke blok settlement');
     Log::info($request->all());
         
 
@@ -62,87 +63,67 @@ class PaymentController extends Controller
     Config::$is3ds = true;
 
 
-        $notif = new Notification();
+        // ✅ Pakai data langsung dari request, bukan new Notification()
+    $data = $request->all();
+    $orderId = $data['order_id'] ?? null;
+    $status  = $data['transaction_status'] ?? null;
 
-        $payment = Payment::where(
-            'order_id',
-            $notif->order_id
-        )->first();
+    Log::info('Order ID: ' . $orderId . ' | Status: ' . $status);
 
-        if (!$payment) {
-            return response()->json([
-                'message' => 'Payment not found'
-            ]);
+    $payment = Payment::where('order_id', $orderId)->first();
+
+    if (!$payment) {
+        Log::error('Payment not found for order_id: ' . $orderId);
+        return response()->json(['message' => 'Payment not found'], 404);
+    }
+
+    if ($status == 'settlement') {
+
+        try {
+            DB::transaction(function () use ($payment, $data) {
+
+                $registration = $payment->registration;
+
+                $facultyCode = $registration->faculty->code;
+                $jurusanCode = $registration->jurusan->code;
+
+                $count = Registration::where('faculty_id', $registration->faculty_id)
+                    ->where('jurusan_id', $registration->jurusan_id)
+                    ->whereNotNull('registration_number')
+                    ->lockForUpdate()
+                    ->count() + 1;
+
+                $running = str_pad($count, 4, '0', STR_PAD_LEFT);
+                $number  = $facultyCode . $jurusanCode . $running;
+
+                $registration->update([
+                    'status'              => 'paid',
+                    'registration_number' => $number,
+                ]);
+
+                $payment->update([
+                    'transaction_status' => 'settlement',
+                    'payment_type'       => $data['payment_type'] ?? null,
+                    'transaction_time'   => now(),
+                ]);
+
+                Log::info('Payment settlement berhasil: ' . $payment->order_id);
+            });
+
+        } catch (\Exception $e) {
+            Log::error('DB Transaction error: ' . $e->getMessage());
+            return response()->json(['message' => 'Server error'], 500);
         }
-
-        $status = $notif->transaction_status;
-
-        if ($status == 'settlement') {
-
-        DB::transaction(function () use ($payment, $notif) {
-
-            $registration = $payment->registration;
-
-            $facultyCode = $registration->faculty->code;
-            $jurusanCode = $registration->jurusan->code;
-
-            $count = Registration::where(
-                'faculty_id',
-                $registration->faculty_id
-            )
-            ->where(
-                'jurusan_id',
-                $registration->jurusan_id
-            )
-            ->whereNotNull('registration_number')
-            ->lockForUpdate()
-            ->count() + 1;
-
-            $running = str_pad(
-                $count,
-                4,
-                '0',
-                STR_PAD_LEFT
-            );
-
-            $number =
-                $facultyCode .
-                $jurusanCode .
-                $running;
-
-            $registration->update([
-                'status' => 'paid',
-                'registration_number' => $number
-            ]);
-
-            $payment->update([
-                'transaction_status' => $notif->transaction_status,
-                'payment_type' => $notif->payment_type,
-                'transaction_time' => now()
-            ]);
-        });
 
     } elseif ($status == 'pending') {
 
-        $payment->update([
-            'transaction_status' => 'pending'
-        ]);
+        $payment->update(['transaction_status' => 'pending']);
 
-    } elseif (
-        $status == 'expire' ||
-        $status == 'cancel' ||
-        $status == 'deny'
-    ) {
+    } elseif (in_array($status, ['expire', 'cancel', 'deny'])) {
 
-        $payment->update([
-            'transaction_status' => $status
-        ]);
+        $payment->update(['transaction_status' => $status]);
     }
 
-
-        return response()->json([
-            'success' => true,
-            'registration' => $registration
-        ]);
-    }
+    return response()->json(['success' => true]);
+}
 }
