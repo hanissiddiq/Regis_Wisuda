@@ -49,6 +49,47 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
   const [villageId, setVillageId] = useState('');
   const [jurusanId, setJurusanId] = useState('');
 
+  // ========start stateForm=========
+  const [formData, setFormData] = useState({
+  name: '',
+  nim: '',
+  nik: '',
+  jenis_kelamin: '',
+  tempat_lahir: '',
+  tanggal_lahir: '',
+  agama: '',
+  telepon: '',
+  nama_ibu: '',
+  nama_ayah: '',
+  address: '',
+
+  no_ijazah: '',
+  ipk: '',
+  keterangan_lulus: '',
+  no_sk_yudisium: '',
+  tanggal_sk_yudisium: '',
+  tanggal_lulus: '',
+  judul_ta: '',
+});
+
+  const [pasPhoto, setPasPhoto] = useState<File | null>(null);
+  const [ijazahSma, setIjazahSma] = useState<File | null>(null);
+  const [skYudisium, setSkYudisium] = useState<File | null>(null);
+
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
+  // =========end stateForm===========
+
+  // ======handler input======
+  const handleChange = (
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+      ) => {
+        setFormData({
+          ...formData,
+          [e.target.name]: e.target.value,
+        });
+      };
+  // ======end handler input==============
+
   useEffect(() => {
     async function loadProvinces() {
       try {
@@ -175,6 +216,90 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
     loadVillages();
   }, [districtId]);
 
+  // ======== start function handleSubmit ========
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      setLoadingSubmit(true);
+
+      const data = new FormData();
+
+      data.append('name', formData.name);
+      data.append('nim', formData.nim);
+      data.append('nik', formData.nik);
+      data.append('jenis_kelamin', formData.jenis_kelamin);
+      data.append('tempat_lahir', formData.tempat_lahir);
+      data.append('tanggal_lahir', formData.tanggal_lahir);
+      data.append('agama', formData.agama);
+      data.append('telepon', formData.telepon);
+
+      data.append('faculty_id', selectedJurusan?.faculty_id.toString() || '');
+      data.append('jurusan_id', jurusanId);
+
+      data.append('provinsi', provinceId);
+      data.append('kabupaten', regencyId);
+      data.append('kecamatan', districtId);
+      data.append('desa', villageId);
+
+      data.append('nama_ibu', formData.nama_ibu);
+      data.append('nama_ayah', formData.nama_ayah);
+
+      data.append('address', formData.address);
+
+      data.append('no_ijazah', formData.no_ijazah);
+      data.append('ipk', formData.ipk);
+      data.append('keterangan_lulus', formData.keterangan_lulus);
+      data.append('no_sk_yudisium', formData.no_sk_yudisium);
+      data.append('tanggal_sk_yudisium', formData.tanggal_sk_yudisium);
+      data.append('tanggal_lulus', formData.tanggal_lulus);
+      data.append('judul_ta', formData.judul_ta);
+
+      if (pasPhoto) {
+        data.append('pas_photo', pasPhoto);
+      }
+
+      if (ijazahSma) {
+        data.append('ijazah_sma', ijazahSma);
+      }
+
+      if (skYudisium) {
+        data.append('sk_yudisium', skYudisium);
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/register`,
+        {
+          method: 'POST',
+          body: data,
+        }
+      );
+
+      const result = await response.json();
+
+      console.log(result);
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Gagal submit');
+      }
+
+      alert('Registrasi berhasil');
+
+      onSave();
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : 'Terjadi kesalahan'
+      );
+    } finally {
+      setLoadingSubmit(false);
+    }
+  };
+  // ======== end function handleSubmit ========
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -186,7 +311,7 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
         <p className="text-xl text-on-surface-variant max-w-2xl leading-relaxed">Selamat atas pencapaian akademik Anda. Silakan lengkapi formulir pendaftaran wisuda di bawah ini dengan data yang valid.</p>
       </div>
 
-      <form className="space-y-10" onSubmit={(e) => { e.preventDefault(); onSave(); }}>
+      <form className="space-y-10" onSubmit={handleSubmit}  >
         {locationError ? (
           <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700">
             {locationError}
@@ -207,20 +332,28 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">NIM Mahasiswa *</label>
-              <input className="glass-input" placeholder="Contoh: 202400123" type="text" />
+              <input className="glass-input" placeholder="Contoh: 202400123" type="text" name="nim"
+  value={formData.nim}
+  onChange={handleChange} />
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Nama Mahasiswa *</label>
-              <input className="glass-input" placeholder="Nama sesuai ijazah" type="text" />
+              <input className="glass-input" placeholder="Nama sesuai ijazah" type="text" name="name"
+  value={formData.name}
+  onChange={handleChange} />
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">NIK (KTP) *</label>
-              <input className="glass-input" placeholder="16 digit nomor kependudukan" type="text" />
+              <input className="glass-input" placeholder="16 digit nomor kependudukan" type="text" name="nik"
+  value={formData.nik}
+  onChange={handleChange} />
             </div>
 
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Jenis Kelamin *</label>
-              <select className="glass-input appearance-none bg-surface-container">
+              <select className="glass-input appearance-none bg-surface-container" name="jenis_kelamin"
+  value={formData.jenis_kelamin}
+  onChange={handleChange}>
                 <option disabled value="">Pilih Jenis Kelamin</option>
                 <option value="L">Laki-Laki</option>
                 <option value="P">Perempuan</option>
@@ -228,16 +361,22 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Tempat Lahir *</label>
-              <input className="glass-input" placeholder="Kota Kelahiran" type="text" />
+              <input className="glass-input" placeholder="Kota Kelahiran" type="text" name="tempat_lahir"
+  value={formData.tempat_lahir}
+  onChange={handleChange} />
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Tanggal Lahir *</label>
-              <input className="glass-input" style={{ colorScheme: 'dark' }} type="date" />
+              <input className="glass-input" style={{ colorScheme: 'dark' }} type="date" name="tanggal_lahir"
+  value={formData.tanggal_lahir}
+  onChange={handleChange} />
             </div>
 
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Agama *</label>
-              <select className="glass-input bg-surface-container">
+              <select className="glass-input bg-surface-container" name="agama"
+  value={formData.agama}
+  onChange={handleChange}>
                 <option disabled value="">Pilih Agama</option>
                 <option>Islam</option>
                 <option>Kristen</option>
@@ -248,7 +387,9 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Telpon/HP *</label>
-              <input className="glass-input" placeholder="08xxxxxxxxxx" type="tel" />
+              <input className="glass-input" placeholder="08xxxxxxxxxx" type="tel" name="telepon"
+  value={formData.telepon}
+  onChange={handleChange} />
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Program Studi *</label>
@@ -335,17 +476,23 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
 
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Nama Ibu Kandung *</label>
-              <input className="glass-input" type="text" />
+              <input className="glass-input" type="text" name="nama_ibu"
+  value={formData.nama_ibu}
+  onChange={handleChange} />
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Nama Ayah *</label>
-              <input className="glass-input" type="text" />
+              <input className="glass-input" type="text" name="nama_ayah"
+  value={formData.nama_ayah}
+  onChange={handleChange} />
             </div>
             <div className="hidden lg:block"></div>
 
             <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-3">
               <label className="text-sm font-semibold text-on-surface">Alamat Lengkap *</label>
-              <textarea className="glass-input resize-none" placeholder="Jalan, No. Rumah, RT/RW" rows={3}></textarea>
+              <textarea className="glass-input resize-none" placeholder="Jalan, No. Rumah, RT/RW" rows={3} name="address"
+  value={formData.address}
+  onChange={handleChange}></textarea>
             </div>
 
 
@@ -362,15 +509,21 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">PIN / Nomor Ijazah *</label>
-              <input className="glass-input" type="text" />
+              <input className="glass-input" type="text" name="no_ijazah"
+  value={formData.no_ijazah}
+  onChange={handleChange} />
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">IPK *</label>
-              <input className="glass-input" placeholder="0.00" step="0.01" type="number" />
+              <input className="glass-input" placeholder="0.00" step="0.01" type="number" name="ipk"
+  value={formData.ipk}
+  onChange={handleChange} />
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Keterangan Lulus *</label>
-              <select className="glass-input bg-surface-container">
+              <select className="glass-input bg-surface-container" name="keterangan_lulus"
+  value={formData.keterangan_lulus}
+  onChange={handleChange}>
                 <option disabled value="">Pilih Keterangan Lulus</option>
                 <option>Cumlaude</option>
                 <option>Sangat Memuaskan</option>
@@ -380,26 +533,36 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
 
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Nomor SK Yudisium *</label>
-              <input className="glass-input" type="text" />
+              <input className="glass-input" type="text" name="no_sk_yudisium"
+  value={formData.no_sk_yudisium}
+  onChange={handleChange} />
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Tanggal SK Yudisium *</label>
-              <input className="glass-input" style={{ colorScheme: 'dark' }} type="date" />
+              <input className="glass-input" style={{ colorScheme: 'dark' }} type="date" name="tanggal_sk_yudisium"
+  value={formData.tanggal_sk_yudisium}
+  onChange={handleChange} />
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Tanggal Lulus *</label>
-              <input className="glass-input" style={{ colorScheme: 'dark' }} type="date" />
+              <input className="glass-input" style={{ colorScheme: 'dark' }} type="date" name="tanggal_lulus"
+  value={formData.tanggal_lulus}
+  onChange={handleChange} />
             </div>
 
-            <div className="flex flex-col gap-2 md:col-span-2">
+            <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-3">
               <label className="text-sm font-semibold text-on-surface">Judul Tugas Akhir / Skripsi *</label>
-              <textarea className="glass-input resize-none" rows={3}></textarea>
+              <textarea className="glass-input resize-none" rows={3} name="judul_ta"
+  value={formData.judul_ta}
+  onChange={handleChange}></textarea>
             </div>
 
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Pas Photo (3x4) *</label>
               <div className="relative group h-full">
-                <input className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" type="file" />
+                <input className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" type="file" onChange={(e) =>
+    setPasPhoto(e.target.files?.[0] || null)
+  }/>
                 <div className="glass-input border-dashed border-2 rounded-xl p-6 flex flex-col items-center justify-center gap-2 h-full min-h-[120px] group-hover:border-primary group-hover:bg-primary/5 transition-all">
                   <UploadCloud size={32} className="text-outline group-hover:text-primary transition-colors" />
                   <span className="text-sm font-semibold text-on-surface-variant">Upload Photo</span>
@@ -407,6 +570,38 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
                 </div>
               </div>
             </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-on-surface">Ijazah SMA*</label>
+              <div className="relative group h-full">
+                <input className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" type="file" onChange={(e) =>
+    setIjazahSma(e.target.files?.[0] || null)
+  } />
+                <div className="glass-input border-dashed border-2 rounded-xl p-6 flex flex-col items-center justify-center gap-2 h-full min-h-[120px] group-hover:border-primary group-hover:bg-primary/5 transition-all">
+                  <UploadCloud size={32} className="text-outline group-hover:text-primary transition-colors" />
+                  <span className="text-sm font-semibold text-on-surface-variant">Upload Ijazah</span>
+                  <span className="text-[10px] text-outline">JPG/PNG max 2MB</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-on-surface">SK Yudisium*</label>
+              <div className="relative group h-full">
+                <input className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" type="file" onChange={(e) =>
+    setSkYudisium(e.target.files?.[0] || null)
+  } />
+                <div className="glass-input border-dashed border-2 rounded-xl p-6 flex flex-col items-center justify-center gap-2 h-full min-h-[120px] group-hover:border-primary group-hover:bg-primary/5 transition-all">
+                  <UploadCloud size={32} className="text-outline group-hover:text-primary transition-colors" />
+                  <span className="text-sm font-semibold text-on-surface-variant">Upload SK Yudisium</span>
+                  <span className="text-[10px] text-outline">JPG/PNG max 2MB</span>
+                </div>
+              </div>
+            </div>
+
+
+
+
           </div>
         </div>
 
@@ -422,4 +617,7 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
       </form>
     </motion.div>
   );
+
+
+  
 }
