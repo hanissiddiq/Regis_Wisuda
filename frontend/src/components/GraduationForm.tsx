@@ -26,17 +26,28 @@ interface Village {
   nama: string;
 }
 
+interface Jurusan {
+  id: number;
+  name: string;
+  code: string;
+  faculty_id: number;
+  faculty_name: string | null;
+}
+
 export default function GraduationForm({ onSave }: GraduationFormProps) {
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [regencies, setRegencies] = useState<Regency[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
   const [villages, setVillages] = useState<Village[]>([]);
+  const [jurusans, setJurusans] = useState<Jurusan[]>([]);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [jurusanError, setJurusanError] = useState<string | null>(null);
 
   const [provinceId, setProvinceId] = useState('');
   const [regencyId, setRegencyId] = useState('');
   const [districtId, setDistrictId] = useState('');
   const [villageId, setVillageId] = useState('');
+  const [jurusanId, setJurusanId] = useState('');
 
   useEffect(() => {
     async function loadProvinces() {
@@ -51,6 +62,36 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
     }
 
     loadProvinces();
+  }, []);
+
+  useEffect(() => {
+    async function loadJurusans() {
+      try {
+        console.log('Fetching jurusans...');
+        // const response = await fetch('/api/jurusans');
+        const response = await fetch( `${import.meta.env.VITE_API_URL}/jurusans`);
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('Jurusans data received:', result);
+        
+        if (result.success && Array.isArray(result.data)) {
+          setJurusans(result.data);
+          setJurusanError(null);
+        } else {
+          setJurusanError(result.message || 'Format respons API tidak valid');
+        }
+      } catch (error) {
+        console.error('Gagal memuat daftar jurusan:', error);
+        setJurusanError(`Gagal memuat data program studi: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+
+    loadJurusans();
   }, []);
 
   useEffect(() => {
@@ -151,6 +192,11 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
             {locationError}
           </div>
         ) : null}
+        {jurusanError ? (
+          <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700">
+            {jurusanError}
+          </div>
+        ) : null}
         {/* Section 1: Data Pribadi */}
         <div className="glass-card p-8 rounded-3xl border-white/5">
           <div className="flex items-center gap-3 mb-8 border-b border-white/10 pb-6">
@@ -206,13 +252,20 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Program Studi *</label>
-              <select className="glass-input bg-surface-container">
-                <option disabled value="">Pilih Program Studi</option>
-                <option>Informatika</option>
-                <option>Sistem Informasi</option>
-                <option>Teknik Elektro</option>
-                <option>Arsitektur</option>
-                <option>Manajemen</option>
+              <select
+                className="glass-input bg-surface-container"
+                value={jurusanId}
+                onChange={(e) => setJurusanId(e.target.value)}
+                disabled={jurusans.length === 0}
+              >
+                <option value="">
+                  {jurusans.length === 0 ? 'Memuat data...' : 'Pilih Program Studi'}
+                </option>
+                {jurusans.map((jurusan) => (
+                  <option key={jurusan.id} value={jurusan.id}>
+                    {jurusan.name}
+                  </option>
+                ))}
               </select>
             </div>
 
