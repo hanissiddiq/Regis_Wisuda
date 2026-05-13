@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { User, School, UploadCloud, Info, Calendar } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -6,7 +6,134 @@ interface GraduationFormProps {
   onSave: () => void;
 }
 
+interface Province {
+  id: string;
+  nama: string;
+}
+
+interface Regency {
+  id: string;
+  nama: string;
+}
+
+interface District {
+  id: string;
+  nama: string;
+}
+
+interface Village {
+  id: string;
+  nama: string;
+}
+
 export default function GraduationForm({ onSave }: GraduationFormProps) {
+  const [provinces, setProvinces] = useState<Province[]>([]);
+  const [regencies, setRegencies] = useState<Regency[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [villages, setVillages] = useState<Village[]>([]);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  const [provinceId, setProvinceId] = useState('');
+  const [regencyId, setRegencyId] = useState('');
+  const [districtId, setDistrictId] = useState('');
+  const [villageId, setVillageId] = useState('');
+
+  useEffect(() => {
+    async function loadProvinces() {
+      try {
+        const response = await fetch('https://ibnux.github.io/data-indonesia/provinsi.json');
+        const data: Province[] = await response.json();
+        setProvinces(data);
+      } catch (error) {
+        console.error('Gagal memuat daftar provinsi', error);
+        setLocationError('Gagal memuat daftar provinsi. Silakan muat ulang halaman.');
+      }
+    }
+
+    loadProvinces();
+  }, []);
+
+  useEffect(() => {
+    if (!provinceId) {
+      setRegencies([]);
+      setDistricts([]);
+      setVillages([]);
+      setRegencyId('');
+      setDistrictId('');
+      setVillageId('');
+      return;
+    }
+
+    async function loadRegencies() {
+      try {
+        const response = await fetch(`https://ibnux.github.io/data-indonesia/kabupaten/${provinceId}.json`);
+        const data: Regency[] = await response.json();
+        setRegencies(data);
+      } catch (error) {
+        console.error('Gagal memuat daftar kabupaten/kota', error);
+        setLocationError('Gagal memuat daftar kabupaten/kota. Silakan pilih ulang provinsi.');
+      }
+    }
+
+    setRegencies([]);
+    setDistricts([]);
+    setVillages([]);
+    setRegencyId('');
+    setDistrictId('');
+    setVillageId('');
+    loadRegencies();
+  }, [provinceId]);
+
+  useEffect(() => {
+    if (!regencyId) {
+      setDistricts([]);
+      setVillages([]);
+      setDistrictId('');
+      setVillageId('');
+      return;
+    }
+
+    async function loadDistricts() {
+      try {
+        const response = await fetch(`https://ibnux.github.io/data-indonesia/kecamatan/${regencyId}.json`);
+        const data: District[] = await response.json();
+        setDistricts(data);
+      } catch (error) {
+        console.error('Gagal memuat daftar kecamatan', error);
+        setLocationError('Gagal memuat daftar kecamatan. Silakan pilih ulang kabupaten/kota.');
+      }
+    }
+
+    setDistricts([]);
+    setVillages([]);
+    setDistrictId('');
+    setVillageId('');
+    loadDistricts();
+  }, [regencyId]);
+
+  useEffect(() => {
+    if (!districtId) {
+      setVillages([]);
+      setVillageId('');
+      return;
+    }
+
+    async function loadVillages() {
+      try {
+        const response = await fetch(`https://ibnux.github.io/data-indonesia/kelurahan/${districtId}.json`);
+        const data: Village[] = await response.json();
+        setVillages(data);
+      } catch (error) {
+        console.error('Gagal memuat daftar desa/kelurahan', error);
+        setLocationError('Gagal memuat daftar desa/kelurahan. Silakan pilih ulang kecamatan.');
+      }
+    }
+
+    setVillages([]);
+    setVillageId('');
+    loadVillages();
+  }, [districtId]);
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -19,6 +146,11 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
       </div>
 
       <form className="space-y-10" onSubmit={(e) => { e.preventDefault(); onSave(); }}>
+        {locationError ? (
+          <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700">
+            {locationError}
+          </div>
+        ) : null}
         {/* Section 1: Data Pribadi */}
         <div className="glass-card p-8 rounded-3xl border-white/5">
           <div className="flex items-center gap-3 mb-8 border-b border-white/10 pb-6">
@@ -43,7 +175,7 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Jenis Kelamin *</label>
               <select className="glass-input appearance-none bg-surface-container">
-                <option disabled selected value="">Pilih Jenis Kelamin</option>
+                <option disabled value="">Pilih Jenis Kelamin</option>
                 <option value="L">Laki-Laki</option>
                 <option value="P">Perempuan</option>
               </select>
@@ -60,7 +192,7 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Agama *</label>
               <select className="glass-input bg-surface-container">
-                <option disabled selected value="">Pilih Agama</option>
+                <option disabled value="">Pilih Agama</option>
                 <option>Islam</option>
                 <option>Kristen</option>
                 <option>Katolik</option>
@@ -75,12 +207,76 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Program Studi *</label>
               <select className="glass-input bg-surface-container">
-                <option disabled selected value="">Pilih Program Studi</option>
+                <option disabled value="">Pilih Program Studi</option>
                 <option>Informatika</option>
                 <option>Sistem Informasi</option>
                 <option>Teknik Elektro</option>
                 <option>Arsitektur</option>
                 <option>Manajemen</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-on-surface">Provinsi *</label>
+              <select
+                className="glass-input bg-surface-container"
+                value={provinceId}
+                onChange={(e) => setProvinceId(e.target.value)}
+              >
+                <option value="">Pilih Provinsi</option>
+                {provinces.map((province) => (
+                  <option key={province.id} value={province.id}>
+                    {province.nama}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-on-surface">Kabupaten / Kota *</label>
+              <select
+                className="glass-input bg-surface-container"
+                value={regencyId}
+                onChange={(e) => setRegencyId(e.target.value)}
+                disabled={!provinceId}
+              >
+                <option value="">Pilih Kabupaten / Kota</option>
+                {regencies.map((regency) => (
+                  <option key={regency.id} value={regency.id}>
+                    {regency.nama}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-on-surface">Kecamatan *</label>
+              <select
+                className="glass-input bg-surface-container"
+                value={districtId}
+                onChange={(e) => setDistrictId(e.target.value)}
+                disabled={!regencyId}
+              >
+                <option value="">Pilih Kecamatan</option>
+                {districts.map((district) => (
+                  <option key={district.id} value={district.id}>
+                    {district.nama}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-on-surface">Desa / Kelurahan *</label>
+              <select
+                className="glass-input bg-surface-container"
+                value={villageId}
+                onChange={(e) => setVillageId(e.target.value)}
+                disabled={!districtId}
+              >
+                <option value="">Pilih Desa / Kelurahan</option>
+                {villages.map((village) => (
+                  <option key={village.id} value={village.id}>
+                    {village.nama}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -98,6 +294,8 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
               <label className="text-sm font-semibold text-on-surface">Alamat Lengkap *</label>
               <textarea className="glass-input resize-none" placeholder="Jalan, No. Rumah, RT/RW" rows={3}></textarea>
             </div>
+
+
           </div>
         </div>
 
@@ -120,7 +318,7 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Keterangan Lulus *</label>
               <select className="glass-input bg-surface-container">
-                <option disabled selected value="">Pilih Keterangan Lulus</option>
+                <option disabled value="">Pilih Keterangan Lulus</option>
                 <option>Cumlaude</option>
                 <option>Sangat Memuaskan</option>
                 <option>Memuaskan</option>
