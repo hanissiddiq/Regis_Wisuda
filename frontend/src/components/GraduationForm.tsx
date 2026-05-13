@@ -79,6 +79,13 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   // =========end stateForm===========
 
+  //=========START STATE PREVIEW=========
+  // STATE PREVIEW
+  const [pasPhotoPreview, setPasPhotoPreview] = useState<string | null>(null);
+  const [ijazahSmaPreview, setIjazahSmaPreview] = useState<string | null>(null);
+  const [skYudisiumPreview, setSkYudisiumPreview] = useState<string | null>(null);
+  //=========END STATE PREVIEW=========
+
   // ======handler input======
   const handleChange = (
   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -223,6 +230,10 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
     try {
       setLoadingSubmit(true);
 
+      const selectedJurusan = jurusans.find(
+        (jurusan) => jurusan.id.toString() === jurusanId
+      );
+
       const data = new FormData();
 
       data.append('name', formData.name);
@@ -271,6 +282,9 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
         `${import.meta.env.VITE_API_URL}/register`,
         {
           method: 'POST',
+           headers: {
+            Accept: 'application/json',
+          },
           body: data,
         }
       );
@@ -560,13 +574,30 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Pas Photo (3x4) *</label>
               <div className="relative group h-full">
-                <input className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" type="file" onChange={(e) =>
-    setPasPhoto(e.target.files?.[0] || null)
-  }/>
+                <input className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                type="file" accept="image/*" 
+                onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+
+                setPasPhoto(file);
+
+                if (file) {
+                  setPasPhotoPreview(URL.createObjectURL(file));
+                }
+              }}/>
+               
                 <div className="glass-input border-dashed border-2 rounded-xl p-6 flex flex-col items-center justify-center gap-2 h-full min-h-[120px] group-hover:border-primary group-hover:bg-primary/5 transition-all">
-                  <UploadCloud size={32} className="text-outline group-hover:text-primary transition-colors" />
+                  {pasPhotoPreview && (
+                  <img
+                    src={pasPhotoPreview}
+                    alt="Preview"
+                    className="mt-4 w-35 h-42 object-cover rounded-xl"
+                  />
+                )}
+                <UploadCloud size={32} className="text-outline group-hover:text-primary transition-colors" />
                   <span className="text-sm font-semibold text-on-surface-variant">Upload Photo</span>
                   <span className="text-[10px] text-outline">JPG/PNG max 2MB</span>
+                  
                 </div>
               </div>
             </div>
@@ -574,10 +605,24 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">Ijazah SMA*</label>
               <div className="relative group h-full">
-                <input className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" type="file" onChange={(e) =>
-    setIjazahSma(e.target.files?.[0] || null)
-  } />
+                <input className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" type="file" accept="image/*" 
+                onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+
+                setIjazahSma(file);
+
+                if (file) {
+                  setIjazahSmaPreview(URL.createObjectURL(file));
+                }
+              }} />
                 <div className="glass-input border-dashed border-2 rounded-xl p-6 flex flex-col items-center justify-center gap-2 h-full min-h-[120px] group-hover:border-primary group-hover:bg-primary/5 transition-all">
+                  {ijazahSmaPreview && (
+                  <img
+                    src={ijazahSmaPreview}
+                    alt="Preview"
+                    className="mt-4 w-35 h-42 object-cover rounded-xl"
+                  />
+                )}
                   <UploadCloud size={32} className="text-outline group-hover:text-primary transition-colors" />
                   <span className="text-sm font-semibold text-on-surface-variant">Upload Ijazah</span>
                   <span className="text-[10px] text-outline">JPG/PNG max 2MB</span>
@@ -588,10 +633,24 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-on-surface">SK Yudisium*</label>
               <div className="relative group h-full">
-                <input className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" type="file" onChange={(e) =>
-    setSkYudisium(e.target.files?.[0] || null)
-  } />
+                <input className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" type="file" accept="image/*" 
+                onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+
+                setSkYudisium(file);
+
+                if (file) {
+                  setSkYudisiumPreview(URL.createObjectURL(file));
+                }
+              }} />
                 <div className="glass-input border-dashed border-2 rounded-xl p-6 flex flex-col items-center justify-center gap-2 h-full min-h-[120px] group-hover:border-primary group-hover:bg-primary/5 transition-all">
+                  {skYudisiumPreview && (
+                  <img
+                    src={skYudisiumPreview}
+                    alt="Preview"
+                    className="mt-4 w-35 h-42 object-cover rounded-xl"
+                  />
+                )}
                   <UploadCloud size={32} className="text-outline group-hover:text-primary transition-colors" />
                   <span className="text-sm font-semibold text-on-surface-variant">Upload SK Yudisium</span>
                   <span className="text-[10px] text-outline">JPG/PNG max 2MB</span>
@@ -610,8 +669,9 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
             <Info size={18} />
             <p className="text-sm italic">Pastikan seluruh data yang Anda masukkan telah sesuai dengan dokumen resmi.</p>
           </div>
-          <button className="btn-primary w-full md:w-auto px-12 py-5 text-xl" type="submit">
-            Simpan Pendaftaran
+          <button className="btn-primary w-full md:w-auto px-12 py-5 text-xl" type="submit" disabled={loadingSubmit}>
+             {loadingSubmit ? 'Menunggu...' : 'Kirim Pendaftaran'}
+            
           </button>
         </div>
       </form>

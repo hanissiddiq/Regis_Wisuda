@@ -19,11 +19,11 @@ class DatabaseSeeder extends Seeder
     {
         // Seed Faculties
         $faculties = [
-            ['name' => 'Teknik', 'code' => 'TK'],
-            ['name' => 'Sains', 'code' => 'SA'],
-            ['name' => 'Kedokteran', 'code' => 'KD'],
-            ['name' => 'Hukum', 'code' => 'HK'],
-            ['name' => 'Bisnis', 'code' => 'BS'],
+            ['name' => 'Teknik', 'code' => '01'],
+            ['name' => 'Sains', 'code' => '02'],
+            ['name' => 'Kedokteran', 'code' => '03'],
+            ['name' => 'Hukum', 'code' => '04'],
+            ['name' => 'Bisnis', 'code' => '05'],
         ];
 
         foreach ($faculties as $faculty) {
@@ -35,17 +35,19 @@ class DatabaseSeeder extends Seeder
 
         // Seed Jurusans
         $jurusans = [
-            ['name' => 'Teknik Informatika', 'code' => 'IF', 'faculty_code' => 'TK'],
-            ['name' => 'Teknik Elektro', 'code' => 'EL', 'faculty_code' => 'TK'],
-            ['name' => 'Teknik Mesin', 'code' => 'MS', 'faculty_code' => 'TK'],
-            ['name' => 'Teknik Sipil', 'code' => 'SL', 'faculty_code' => 'TK'],
-            ['name' => 'Biologi', 'code' => 'BI', 'faculty_code' => 'SA'],
-            ['name' => 'Kimia', 'code' => 'KM', 'faculty_code' => 'SA'],
-            ['name' => 'Fisika', 'code' => 'FK', 'faculty_code' => 'SA'],
-            ['name' => 'Kedokteran Umum', 'code' => 'KU', 'faculty_code' => 'KD'],
-            ['name' => 'Ilmu Hukum', 'code' => 'IH', 'faculty_code' => 'HK'],
-            ['name' => 'Manajemen', 'code' => 'MN', 'faculty_code' => 'BS'],
+            ['name' => 'Teknik Informatika', 'code' => '01', 'faculty_code' => '01'],
+            ['name' => 'Teknik Elektro', 'code' => '02', 'faculty_code' => '01'],
+            ['name' => 'Teknik Mesin', 'code' => '03', 'faculty_code' => '01'],
+            ['name' => 'Teknik Sipil', 'code' => '04', 'faculty_code' => '01'],
+            ['name' => 'Biologi', 'code' => '01', 'faculty_code' => '02'],
+            ['name' => 'Kimia', 'code' => '02', 'faculty_code' => '02'],
+            ['name' => 'Fisika', 'code' => '03', 'faculty_code' => '02'],
+            ['name' => 'Kedokteran Umum', 'code' => '01', 'faculty_code' => '03'],
+            ['name' => 'Ilmu Hukum', 'code' => '01', 'faculty_code' => '04'],
+            ['name' => 'Manajemen', 'code' => '01', 'faculty_code' => '05'],
         ];
+
+        
 
         foreach ($jurusans as $jurusan) {
             $faculty = Faculty::where('code', $jurusan['faculty_code'])->first();
@@ -64,6 +66,12 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+        ]);
+
+        User::factory()->create([
+            'name' => 'Admin',
+            'email' => 'admin@gmail.com',
+            'password' => bcrypt('password'),
         ]);
     }
 }
