@@ -13,3 +13,7 @@ Route::post('/payment/callback', [PaymentController::class, 'callback']);
 Route::get('/faculties', [MasterController::class, 'faculties']);
 
 Route::get('/jurusans', [MasterController::class, 'jurusans']);
+
+Route::get('/test', function () {
+    return 'API OK';
+});

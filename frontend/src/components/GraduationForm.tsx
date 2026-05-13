@@ -297,9 +297,78 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
         throw new Error(result.message || 'Gagal submit');
       }
 
-      alert('Registrasi berhasil');
+      // alert('Registrasi berhasil');
+      // onSave();
 
-      onSave();
+      // ===============================
+      // CREATE MIDTRANS TRANSACTION
+      // ===============================
+      if (!result.registration?.id) {
+        throw new Error('ID registrasi tidak ditemukan');
+      }
+
+      const paymentResponse = await fetch(
+        // `${import.meta.env.VITE_API_URL}/payment/create`,
+        `${import.meta.env.VITE_API_URL}/payment`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+
+          body: JSON.stringify({
+            registration_id: result.registration.id,
+          }),
+        }
+      );
+
+      const paymentResult = await paymentResponse.json();
+
+      // ===============================
+      // SHOW MIDTRANS POPUP
+      // ===============================
+      if (!paymentResponse.ok) {
+        throw new Error(
+          paymentResult.message || 'Gagal membuat pembayaran'
+        );
+      }
+
+      if (!window.snap) {
+        throw new Error('Midtrans belum dimuat');
+      }
+
+      window.snap.pay(paymentResult.snap_token, {
+
+        onSuccess: function(result: any) {
+
+          alert('Pembayaran berhasil');
+
+          console.log(result);
+
+          onSave();
+        },
+
+        onPending: function(result: any) {
+
+          alert('Menunggu pembayaran');
+
+          console.log(result);
+        },
+
+        onError: function(result: any) {
+
+          alert('Pembayaran gagal');
+
+          console.log(result);
+        },
+
+        onClose: function() {
+
+          alert('Popup pembayaran ditutup');
+        }
+      });
+
     } catch (error) {
       console.error(error);
 
@@ -311,6 +380,10 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
     } finally {
       setLoadingSubmit(false);
     }
+
+     // ===============================
+      // END SHOW MIDTRANS POPUP
+      // ===============================
   };
   // ======== end function handleSubmit ========
 

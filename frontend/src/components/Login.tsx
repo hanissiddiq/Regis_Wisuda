@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Lock, School, Eye } from 'lucide-react';
+import { User, Lock, School, Eye, GraduationCap } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface LoginProps {
@@ -19,7 +19,7 @@ export default function Login({ onLogin, onNavigateToRegister }: LoginProps) {
       {/* Brand Identity */}
       <div className="text-center mb-12 relative z-10">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-secondary-container mb-6 shadow-lg shadow-primary/20">
-          <School className="text-on-primary" size={32} />
+          <GraduationCap className="text-on-primary" size={32} />
         </div>
         <h1 className="text-3xl font-display font-bold text-primary tracking-tight">AetherReg</h1>
         <p className="text-sm font-semibold text-on-surface-variant uppercase tracking-widest mt-2">Portal Akademik</p>

@@ -4,6 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Payment;
+use App\Models\Registration;
+use Midtrans\Config;
+use Midtrans\Snap;
+use Midtrans\Notification;
+use Illuminate\Support\Facades\DB;
+
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -33,6 +41,8 @@ class PaymentController extends Controller
             'registration_id' => $registration->id,
             'order_id' => $orderId,
             'gross_amount' => 150000,
+            // 'snap_token' => $snapToken,
+            'transaction_status' => 'pending',
         ]);
 
         return response()->json([
@@ -42,6 +52,16 @@ class PaymentController extends Controller
 
     public function callback(Request $request)
     {
+        Log::info('CALLBACK MASUK');
+    Log::info($request->all());
+        
+
+    Config::$serverKey = config('midtrans.server_key');
+    Config::$isProduction = config('midtrans.is_production');
+    Config::$isSanitized = true;
+    Config::$is3ds = true;
+
+
         $notif = new Notification();
 
         $payment = Payment::where(
@@ -55,55 +75,74 @@ class PaymentController extends Controller
             ]);
         }
 
-        if ($notif->transaction_status == 'settlement') {
+        $status = $notif->transaction_status;
 
-            DB::transaction(function () use ($payment, $notif) {
+        if ($status == 'settlement') {
 
-                $registration = $payment->registration;
+        DB::transaction(function () use ($payment, $notif) {
 
-                $facultyCode = $registration->faculty->code;
+            $registration = $payment->registration;
 
-                $departmentCode = $registration->jurusan->code;
+            $facultyCode = $registration->faculty->code;
+            $jurusanCode = $registration->jurusan->code;
 
-                $count = Registration::where(
-                    'faculty_id',
-                    $registration->faculty_id
-                )
-                ->where(
-                    'jurusan_id',
-                    $registration->jurusan_id
-                )
-                ->whereNotNull('registration_number')
-                ->lockForUpdate()
-                ->count() + 1;
+            $count = Registration::where(
+                'faculty_id',
+                $registration->faculty_id
+            )
+            ->where(
+                'jurusan_id',
+                $registration->jurusan_id
+            )
+            ->whereNotNull('registration_number')
+            ->lockForUpdate()
+            ->count() + 1;
 
-                $running = str_pad(
-                    $count,
-                    4,
-                    '0',
-                    STR_PAD_LEFT
-                );
+            $running = str_pad(
+                $count,
+                4,
+                '0',
+                STR_PAD_LEFT
+            );
 
-                $number =
-                    $facultyCode .
-                    $jurusanCode .
-                    $running;
+            $number =
+                $facultyCode .
+                $jurusanCode .
+                $running;
 
-                $registration->update([
-                    'status' => 'paid',
-                    'registration_number' => $number
-                ]);
+            $registration->update([
+                'status' => 'paid',
+                'registration_number' => $number
+            ]);
 
-                $payment->update([
-                    'transaction_status' => $notif->transaction_status,
-                    'payment_type' => $notif->payment_type,
-                    'transaction_time' => now()
-                ]);
-            });
-        }
+            $payment->update([
+                'transaction_status' => $notif->transaction_status,
+                'payment_type' => $notif->payment_type,
+                'transaction_time' => now()
+            ]);
+        });
+
+    } elseif ($status == 'pending') {
+
+        $payment->update([
+            'transaction_status' => 'pending'
+        ]);
+
+    } elseif (
+        $status == 'expire' ||
+        $status == 'cancel' ||
+        $status == 'deny'
+    ) {
+
+        $payment->update([
+            'transaction_status' => $status
+        ]);
+    }
+
 
         return response()->json([
-            'success' => true
+            'success' => true,
+            'registration' => $registration
         ]);
     }
 }

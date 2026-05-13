@@ -103,6 +103,9 @@ class RegistrationController extends Controller
             'status' => 'waiting_payment'
         ]);
 
-        return response()->json($registration);
+        return response()->json([
+            'success' => true,
+            'message' => 'Registrasi berhasil',
+            'registration' => $registration,]);
     }
 }
