@@ -12,6 +12,7 @@ use Midtrans\Notification;
 use Illuminate\Support\Facades\DB;
 
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PaymentController extends Controller
 {
@@ -23,12 +24,15 @@ class PaymentController extends Controller
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
 
-        $orderId = uniqid();
+        // Generate unique order ID
+        // $orderId = uniqid();
+        $orderId = 'TRX-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
+        // example: TRX-5F2A1B
 
         $params = [
             'transaction_details' => [
                 'order_id' => $orderId,
-                'gross_amount' => 150000
+                'gross_amount' => 1750000
             ],
             'customer_details' => [
                 'first_name' => $registration->name,
@@ -40,7 +44,7 @@ class PaymentController extends Controller
         Payment::create([
             'registration_id' => $registration->id,
             'order_id' => $orderId,
-            'gross_amount' => 150000,
+            'gross_amount' => 1750000,
             // 'snap_token' => $snapToken,
             'transaction_status' => 'pending',
         ]);
@@ -126,4 +130,28 @@ class PaymentController extends Controller
 
     return response()->json(['success' => true]);
 }
+
+    public function show($orderId)
+    {
+        $payment = Payment::with('registration')
+            ->where('order_id', $orderId)
+            ->firstOrFail();
+
+        if (!$payment) {
+        return response()->json([
+            'message' => 'Payment not found'
+        ], 404);
+        }
+
+        return response()->json($payment);
+    }
+
+    public function downloadPdf($id)
+    {
+        $payment = Payment::with('registration')->findOrFail($id);
+
+        $pdf = Pdf::loadView('pdf.payment', compact('payment'));
+
+        return $pdf->download('bukti-pembayaran.pdf');
+    }
 }

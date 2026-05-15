@@ -277,13 +277,15 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
       if (skYudisium) {
         data.append('sk_yudisium', skYudisium);
       }
-
+      
+      const token = localStorage.getItem('token');
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/register`,
         {
           method: 'POST',
            headers: {
             Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
           },
           body: data,
         }
@@ -315,6 +317,7 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
           headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
           },
 
           body: JSON.stringify({
@@ -341,10 +344,22 @@ export default function GraduationForm({ onSave }: GraduationFormProps) {
       window.snap.pay(paymentResult.snap_token, {
 
         onSuccess: function(result: any) {
+          console.log(result);
+
+            // SIMPAN ORDER ID
+          localStorage.setItem(
+            'order_id',
+            result.order_id
+          );
+
+          // OPTIONAL
+          localStorage.setItem(
+            'transaction_status',
+            result.transaction_status
+          );
 
           alert('Pembayaran berhasil');
 
-          console.log(result);
 
           onSave();
         },

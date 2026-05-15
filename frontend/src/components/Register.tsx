@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { User, Mail, Lock, BadgeCheck } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -8,6 +8,82 @@ interface RegisterProps {
 }
 
 export default function Register({ onRegister, onNavigateToLogin }: RegisterProps) {
+
+  const [loading, setLoading] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: '',
+    nim: '',
+    email: '',
+    password: '',
+  });
+
+   const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  //=========== START REGISTER LOGIC ===========//
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+
+    e.preventDefault();
+
+    try {
+
+      setLoading(true);
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/register`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+
+          body: JSON.stringify(formData),
+        }
+      );
+
+      const result = await response.json();
+
+      console.log(result);
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || 'Register gagal'
+        );
+      }
+
+      alert('Register berhasil');
+
+      // pindah ke login
+      onRegister();
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : 'Terjadi kesalahan'
+      );
+
+    } finally {
+
+      setLoading(false);
+    }
+  };
+  //=========== END REGISTER LOGIC ===========//
+
+
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
@@ -19,12 +95,15 @@ export default function Register({ onRegister, onNavigateToLogin }: RegisterProp
         <p className="text-on-surface-variant font-medium">Mulai perjalanan akademik Anda hari ini.</p>
       </div>
 
-      <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); onRegister(); }}>
+      <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-2">
           <label className="text-sm font-semibold text-on-surface-variant ml-1">Nama Lengkap</label>
           <div className="relative group">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" size={20} />
-            <input className="glass-input pl-12" placeholder="Contoh: Budi Santoso" type="text" />
+            <input className="glass-input pl-12" placeholder="Contoh: Budi Santoso" type="text" name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required/>
           </div>
         </div>
 
@@ -32,7 +111,10 @@ export default function Register({ onRegister, onNavigateToLogin }: RegisterProp
           <label className="text-sm font-semibold text-on-surface-variant ml-1">NIM</label>
           <div className="relative group">
             <BadgeCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" size={20} />
-            <input className="glass-input pl-12" placeholder="Masukkan 10 digit NIM" type="text" />
+            <input className="glass-input pl-12" placeholder="Masukkan 10 digit NIM" type="text" name="nim"
+              value={formData.nim}
+              onChange={handleChange}
+              required/>
           </div>
         </div>
 
@@ -40,7 +122,10 @@ export default function Register({ onRegister, onNavigateToLogin }: RegisterProp
           <label className="text-sm font-semibold text-on-surface-variant ml-1">Email</label>
           <div className="relative group">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" size={20} />
-            <input className="glass-input pl-12" placeholder="nama@universitas.ac.id" type="email" />
+            <input className="glass-input pl-12" placeholder="nama@universitas.ac.id" type="email" name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required/>
           </div>
         </div>
 
@@ -48,12 +133,24 @@ export default function Register({ onRegister, onNavigateToLogin }: RegisterProp
           <label className="text-sm font-semibold text-on-surface-variant ml-1">Password</label>
           <div className="relative group">
             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" size={20} />
-            <input className="glass-input pl-12" placeholder="Minimal 8 karakter" type="password" />
+            <input className="glass-input pl-12" placeholder="Minimal 8 karakter" type="password" name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required/>
           </div>
         </div>
 
         <div className="pt-2 space-y-4">
-          <button className="btn-primary py-3" type="submit">Buat Akun</button>
+          {/* <button className="btn-primary py-3" type="submit">Buat Akun</button> */}
+          <button
+            className="btn-primary py-3 w-full"
+            type="submit"
+            disabled={loading}
+          >
+            {loading
+              ? 'Loading...'
+              : 'Buat Akun'}
+          </button>
           
           <div className="relative flex items-center gap-3">
             <div className="flex-grow border-t border-white/10" />

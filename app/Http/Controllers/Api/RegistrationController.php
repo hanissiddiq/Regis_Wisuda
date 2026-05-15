@@ -4,13 +4,24 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Registration;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class RegistrationController extends Controller
 {
+    // $check = Registration::where('user_id', auth()->id())->first();
+
+    //     if ($check) {
+    //         return response()->json([
+    //             'message' => 'Anda sudah mendaftar'
+    //         ], 400);
+    //     }
+
     public function store(Request $request)
     {
         $request->validate([
+
+        // 'user_id' => 'required|exists:users,id',
 
             'name' => 'required',
 
@@ -60,6 +71,9 @@ class RegistrationController extends Controller
         //     ->store('recommendations', 'public');
 
         $registration = Registration::create([
+        //ambil user_id dari token yang sedang login
+        'user_id' => auth()->id(),
+        
 
             'name' => $request->name,
 
@@ -108,4 +122,39 @@ class RegistrationController extends Controller
             'message' => 'Registrasi berhasil',
             'registration' => $registration,]);
     }
+
+    public function downloadPdf($id)
+    {
+        $registration = Registration::with([
+            'faculty',
+            'jurusan',
+            'payment'
+        ])->findOrFail($id);
+
+        $pdf = Pdf::loadView(
+            'pdf.registration',
+            compact('registration')
+        );
+
+        return $pdf->download('bukti-registrasi.pdf');
+    }
+
+    public function myRegistration()
+{
+    $registration = Registration::with([
+            'user',
+            'jurusan'
+        ])
+        ->where('user_id', auth()->id())
+        ->latest()
+        ->first();
+
+    if (!$registration) {
+        return response()->json([
+            'message' => 'Data registrasi tidak ditemukan'
+        ], 404);
+    }
+
+    return response()->json($registration);
+}
 }

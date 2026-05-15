@@ -1,6 +1,7 @@
 import React from 'react';
 import { User, Lock, School, Eye, GraduationCap } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useState } from 'react';
 
 interface LoginProps {
   onLogin: () => void;
@@ -8,6 +9,56 @@ interface LoginProps {
 }
 
 export default function Login({ onLogin, onNavigateToRegister }: LoginProps) {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleLogin = async (e: any) => {
+
+      e.preventDefault();
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/login`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+
+          body: JSON.stringify({
+            email,
+            password
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      console.log(result);
+        if (!response.ok) {
+        alert(result.message);
+        return;
+      }
+
+      // =========================
+      // SIMPAN TOKEN DISINI
+      // =========================
+
+      localStorage.setItem(
+        'token',
+        result.token
+      );
+
+      localStorage.setItem(
+        'user',
+        JSON.stringify(result.user)
+      );
+
+      onLogin();
+
+      alert('Login berhasil');
+    };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -33,8 +84,9 @@ export default function Login({ onLogin, onNavigateToRegister }: LoginProps) {
             <User className="absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" size={20} />
             <input 
               className="glass-input pl-12" 
-              placeholder="Masukkan identitas Anda" 
-              type="text" 
+              type="email"
+        placeholder="Email"
+        onChange={(e) => setEmail(e.target.value)} 
             />
           </div>
         </div>
@@ -47,9 +99,10 @@ export default function Login({ onLogin, onNavigateToRegister }: LoginProps) {
           <div className="relative group">
             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" size={20} />
             <input 
-              className="glass-input pl-12 pr-12" 
-              placeholder="••••••••" 
-              type="password" 
+              className="glass-input pl-12 pr-12"               
+              type="password"
+        placeholder="Password"
+        onChange={(e) => setPassword(e.target.value)}
             />
             <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors">
               <Eye size={20} />
@@ -57,7 +110,7 @@ export default function Login({ onLogin, onNavigateToRegister }: LoginProps) {
           </div>
         </div>
 
-        <button className="btn-primary mt-4" type="submit">
+        <button className="btn-primary mt-4" type="submit" onClick={handleLogin}>
           Masuk
         </button>
 
