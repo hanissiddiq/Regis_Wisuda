@@ -38,6 +38,15 @@ export default function Register({ onRegister, onNavigateToLogin }: RegisterProp
 
       setLoading(true);
 
+       // ambil csrf cookie
+    await fetch(
+      `${import.meta.env.VITE_API_URL}/sanctum/csrf-cookie`,
+      // 'http://127.0.0.1:8000/sanctum/csrf-cookie',
+      {
+        credentials: 'include',
+      }
+    );
+
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/auth/register`,
         {
@@ -45,8 +54,9 @@ export default function Register({ onRegister, onNavigateToLogin }: RegisterProp
           headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
           },
-
+          credentials: 'include',
           body: JSON.stringify(formData),
         }
       );
