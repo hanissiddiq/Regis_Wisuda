@@ -72,8 +72,8 @@ export default function Login({ onLogin, onNavigateToRegister }: LoginProps) {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-secondary-container mb-6 shadow-lg shadow-primary/20">
           <GraduationCap className="text-on-primary" size={32} />
         </div>
-        <h1 className="text-3xl font-display font-bold text-primary tracking-tight">AetherReg</h1>
-        <p className="text-sm font-semibold text-on-surface-variant uppercase tracking-widest mt-2">Portal Akademik</p>
+        <h1 className="text-3xl font-display font-bold text-primary tracking-tight">WISUDANA</h1>
+        <p className="text-sm font-semibold text-on-surface-variant uppercase tracking-widest mt-2">Portal Wisuda</p>
       </div>
 
       {/* Login Form */}

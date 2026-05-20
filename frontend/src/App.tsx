@@ -149,7 +149,7 @@ export default function App() {
           <div className="flex justify-between items-center px-8 py-4">
 
             <div className="text-2xl font-bold text-primary">
-              AetherReg
+              WISUDANA
             </div>
 
             <button

@@ -101,7 +101,7 @@ export default function Register({ onRegister, onNavigateToLogin }: RegisterProp
       className="w-full max-w-[480px] glass-card rounded-xl p-8 md:p-12 space-y-8 border-t-[1.5px] border-l-[1.5px] border-white/20"
     >
       <div className="text-center space-y-2">
-        <h1 className="text-4xl font-display font-bold text-primary tracking-tight">AetherReg</h1>
+        <h1 className="text-4xl font-display font-bold text-primary tracking-tight">WISUDANA</h1>
         <p className="text-on-surface-variant font-medium">Mulai perjalanan akademik Anda hari ini.</p>
       </div>
 

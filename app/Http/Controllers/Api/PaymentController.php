@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Payment;
+use App\Models\GraduationFee;
 use App\Models\Registration;
 use Midtrans\Config;
 use Midtrans\Snap;
@@ -21,6 +22,20 @@ class PaymentController extends Controller
     {
         $registration = Registration::findOrFail($request->registration_id);
 
+        // ambil biaya berdasarkan fakultas & jurusan
+        $fee = GraduationFee::where('faculty_id', $registration->faculty_id)
+            ->where('jurusan_id', $registration->jurusan_id)
+            ->where('year', now()->year)
+            ->first();
+
+        if (!$fee) {
+            return response()->json([
+                'message' => 'Biaya wisuda belum diatur admin'
+            ], 404);
+        }
+
+        $grossAmount = $fee->amount;
+
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
 
@@ -32,7 +47,13 @@ class PaymentController extends Controller
         $params = [
             'transaction_details' => [
                 'order_id' => $orderId,
-                'gross_amount' => 1750000
+
+                // $fee = GraduationFee::where('faculty_id', $registration->faculty_id)
+                // ->where('jurusan_id', $registration->jurusan_id)
+                // ->where('year', now()->year)
+                // ->first(),
+                // 'gross_amount' => 1750000   
+                'gross_amount' => $grossAmount   
             ],
             'customer_details' => [
                 'first_name' => $registration->name,
@@ -44,7 +65,8 @@ class PaymentController extends Controller
         Payment::create([
             'registration_id' => $registration->id,
             'order_id' => $orderId,
-            'gross_amount' => 1750000,
+            // 'gross_amount' => 1750000,
+            'gross_amount' => $grossAmount,
             // 'snap_token' => $snapToken,
             'transaction_status' => 'pending',
         ]);
