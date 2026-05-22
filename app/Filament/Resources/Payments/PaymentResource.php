@@ -23,10 +23,10 @@ class PaymentResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'Payment';
 
-    public static function form(Schema $schema): Schema
-    {
-        return PaymentForm::configure($schema);
-    }
+    // public static function form(Schema $schema): Schema
+    // {
+    //     return PaymentForm::configure($schema);
+    // }
 
     public static function table(Table $table): Table
     {

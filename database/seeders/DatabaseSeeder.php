@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\Faculty;
 use App\Models\Jurusan;
+use App\Models\GraduationFee;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -20,6 +21,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
         FacultySeeder::class,
         JurusanSeeder::class,
+        GraduationFeeSeeder::class,
         ]);
 
         // // Seed Faculties
